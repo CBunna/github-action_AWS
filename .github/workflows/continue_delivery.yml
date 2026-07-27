@@ -1,98 +1,98 @@
 name: Continuous Delivery (CD) & Container Release
 on:
-    push:
-        tags:
-            - "v*.*.*"
-    workflow_run:
-        workflows: ["Continue Integration (CI)"]
-        types:
-            - completed
-        branches:
-            - main
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_run:
+    workflows: ['Continue Integration (CI)']
+    types:
+      - completed
+    branches:
+      - main
 permissions:
-    contents: read
-    packages: write
-    security-events: write
+  contents: read
+  packages: write
+  security-events: write
 
 jobs:
-    # Job 1: Build & Push Docker Image to GHCR
-    build-and-push-ghcr:
-        name: Build & Push Container Image to GHCR
-        #Trigger when pushing a tag version or when the CI workflow completes successfully
-        if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
-        runs-on: ubuntu-latest
+  # Job 1: Build & Push Docker Image to GHCR
+  build-and-push-ghcr:
+    name: Build & Push Container Image to GHCR
+    #Trigger when pushing a tag version or when the CI workflow completes successfully
+    if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
 
-        #Declare output to share the image tag with other jobs
-        outputs:
-            image_tag: ${{steps.set-tag.outputs.image_tag}}
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-            # GitHub’s runners use x86 (amd64) CPUs. QEMU allows the runner to simulate other CPU architectures like ARM64 (linux/arm64). This enables you to build container images that run natively on Apple Silicon MacBooks (M1/M2/M3) or ARM cloud servers (like AWS Graviton) without hardware errors.
-            - name: Set up QEMU for multi-platform builds
-              uses: docker/setup-qemu-action@v4
+    #Declare output to share the image tag with other jobs
+    outputs:
+      image_tag: ${{steps.set-tag.outputs.image_tag}}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      # GitHub’s runners use x86 (amd64) CPUs. QEMU allows the runner to simulate other CPU architectures like ARM64 (linux/arm64). This enables you to build container images that run natively on Apple Silicon MacBooks (M1/M2/M3) or ARM cloud servers (like AWS Graviton) without hardware errors.
+      - name: Set up QEMU for multi-platform builds
+        uses: docker/setup-qemu-action@v4
 
-            # tandard docker build lacks support for multi-platform outputs, advanced layer caching, and automatic metadata labeling. Buildx unlocks these features (including the cache-from/cache-to options used in step 6).
-            - name: set up Docker buildx
-              uses: docker/setup-buildx-action@v3
+      # tandard docker build lacks support for multi-platform outputs, advanced layer caching, and automatic metadata labeling. Buildx unlocks these features (including the cache-from/cache-to options used in step 6).
+      - name: set up Docker buildx
+        uses: docker/setup-buildx-action@v3
 
-            - name: Login to GitHub Container Registry
-              uses: docker/login-action@v3
-              with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
-            - name: Extract Docker metadata
-              id: meta
-              uses: docker/metadata-action@v5
-              with:
-                  images: ghcr.io/${{ github.repository }}
-                  tags: |
-                      type=semver,pattern={{version}}
-                      type=semver,pattern={{major}}.{{minor}}
-                      type=ref,event=branch
-                      type=sha,format=long,prefix=sha-
-                      type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=ref,event=branch
+            type=sha,format=long,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-            - name: Build and push Docker image
-              uses: docker/build-push-action@v5
-              with:
-                  context: .
-                  push: true
-                  tags: ${{ steps.meta.outputs.tags }}
-                  labels: ${{ steps.meta.outputs.labels }}
-                  cache-from: type=gha
-                  cache-to: type=gha,mode=max
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-            # ghcr.io requires the image reference to be lowercase, but github.repository
-            # preserves the repository's actual case, so it must be lowercased here.
-            - name: Set image tag output
-              id: set-tag
-              run: echo "image_tag=ghcr.io/${GITHUB_REPOSITORY,,}:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+      # ghcr.io requires the image reference to be lowercase, but github.repository
+      # preserves the repository's actual case, so it must be lowercased here.
+      - name: Set image tag output
+        id: set-tag
+        run: echo "image_tag=ghcr.io/${GITHUB_REPOSITORY,,}:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
-    # Job 2: Trivy Container Vulnerability Scan
-    trivy-security-scan:
-        name: Container Vulnerability Security Scan
-        runs-on: ubuntu-latest
-        needs: build-and-push-ghcr
+  # Job 2: Trivy Container Vulnerability Scan
+  trivy-security-scan:
+    name: Container Vulnerability Security Scan
+    runs-on: ubuntu-latest
+    needs: build-and-push-ghcr
 
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            # Scan using the exact SHA tag pushed in Job 1
-            - name: Run Trivy vulnerability scanner
-              uses: aquasecurity/trivy-action@master
-              with:
-                  image-ref: "${{ needs.build-and-push-ghcr.outputs.image_tag }}"
-                  format: "sarif"
-                  output: "trivy-results.sarif"
-                  exit-code: "0"
-                  ignore-unfixed: true
-                  vuln-type: "os,library"
-                  severity: "CRITICAL,HIGH"
+      # Scan using the exact SHA tag pushed in Job 1
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ needs.build-and-push-ghcr.outputs.image_tag }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
 
-            - name: Upload Trivy scan results to GitHub Security
-              uses: github/codeql-action/upload-sarif@v3
-              with:
-                  sarif_file: "trivy-results.sarif"
+      - name: Upload Trivy scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
