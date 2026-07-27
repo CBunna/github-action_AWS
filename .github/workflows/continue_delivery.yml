@@ -64,6 +64,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # ghcr.io requires the image reference to be lowercase, but github.repository
+      # preserves the repository's actual case, so it must be lowercased here.
+      - name: Set image tag output
+        id: set-tag
+        run: echo "image_tag=ghcr.io/${GITHUB_REPOSITORY,,}:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
   # Job 2: Trivy Container Vulnerability Scan
   trivy-security-scan:
     name: Container Vulnerability Security Scan
@@ -78,7 +84,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}:sha-${{ github.sha }}'
+          image-ref: '${{ needs.build-and-push-ghcr.outputs.image_tag }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
           exit-code: '0'
