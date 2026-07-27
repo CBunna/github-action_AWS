@@ -1,111 +1,111 @@
 name: Continue Integration (CI)
 on:
-    # trigger for push event to main, master, and feature branches
-    push:
-        branches: [main, master, "feature/**"]
-    # trigger for pull request event to main and master branches
-    pull_request:
-        branches: [main, master]
+  # trigger for push event to main, master, and feature branches
+  push:
+    branches: [main, master, 'feature/**']
+  # trigger for pull request event to main and master branches
+  pull_request:
+    branches: [main, master]
 
 # permission to access the repository contents and packages
 permissions:
-    contents: read
-    packages: read
+  contents: read
+  packages: read
 
 jobs:
-    # Job 1: Code Quality & Security Audit
-    code-quality:
-        name: Code Quality & Security Audit
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+  # Job 1: Code Quality & Security Audit
+  code-quality:
+    name: Code Quality & Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Set up Node.js 18
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 18
-                  cache: "npm"
-            - name: Install Dependencies
-              run: npm ci
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install Dependencies
+        run: npm ci
 
-            # run eslint, this will check for any linting issues
-            - name: Run ESLint
-              run: npm run lint
+      # run eslint, this will check for any linting issues
+      - name: Run ESLint
+        run: npm run lint
 
-            # run prettier formatting check, this will check for any formatting issues
-            - name: Run Prettier formatting check
-              run: npm run format:check
+      # run prettier formatting check, this will check for any formatting issues
+      - name: Run Prettier formatting check
+        run: npm run format:check
 
-            # npm audit --audit-level=high will check for security vulnerabilities in the dependencies
-            - name: Run security audit for dependencies
-              run: npm audit --audit-level=high
-              continue-on-error: true
+      # npm audit --audit-level=high will check for security vulnerabilities in the dependencies
+      - name: Run security audit for dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
 
-    # Job 2: Automated Unit & Component Tests
-    unit-and-component-tests:
-        name: Unit & Component Tests
-        runs-on: ubuntu-latest
-        needs: code-quality
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+  # Job 2: Automated Unit & Component Tests
+  unit-and-component-tests:
+    name: Unit & Component Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Set up Node.js 18
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 18
-                  cache: "npm"
-            - name: Install Dependencies
-              run: npm ci
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install Dependencies
+        run: npm ci
 
-            # run vitest, this will run the unit and component tests
-            - name: Run Vitest test suite
-              run: npm run test
+      # run vitest, this will run the unit and component tests
+      - name: Run Vitest test suite
+        run: npm run test
 
-        # Job 3: Application Production Build
-    build-application:
-        name: Build Production Assets
-        runs-on: ubuntu-latest
-        needs: unit-and-component-tests
-        steps:
-            - name: Checkout Code
-              uses: actions/checkout@v4
-            - name: Set up Node.js 18
-              uses: actions/setup-node@v4
-            - name: Install Dependencies
-              run: npm ci
-            - name: Build static Production bundle
-              run: npm run build
-            - name: Upload build output artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: dist-static-bundle
-                  # upload dist folder to github actions
-                  path: dist/
-                  # keep the artifact for 7 days
-                  retention-days: 7
+    # Job 3: Application Production Build
+  build-application:
+    name: Build Production Assets
+    runs-on: ubuntu-latest
+    needs: unit-and-component-tests
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build static Production bundle
+        run: npm run build
+      - name: Upload build output artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-static-bundle
+          # upload dist folder to github actions
+          path: dist/
+          # keep the artifact for 7 days
+          retention-days: 7
 
-        # Job 4: Docker Container Build Verification
-    docker-build-test:
-        name: Verify Docker Container Build
-        runs-on: ubuntu-latest
-        needs: build-application
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+    # Job 4: Docker Container Build Verification
+  docker-build-test:
+    name: Verify Docker Container Build
+    runs-on: ubuntu-latest
+    needs: build-application
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            # set up buildx, this will allow us to build docker images
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
+      # set up buildx, this will allow us to build docker images
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-            # Build Docker image (dry-run), because we don't have a registry to push to yet, so we will just build the image and tag it as test
-            - name: Build Docker image (dry-run)
-              uses: docker/build-push-action@v5
-              with:
-                  context: .
-                  # don't push the image, it's just a test
-                  push: false
-                  tags: cat-shop:test
-                  cache-from: type=gha
-                  cache-to: type=gha,mode=max
+      # Build Docker image (dry-run), because we don't have a registry to push to yet, so we will just build the image and tag it as test
+      - name: Build Docker image (dry-run)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          # don't push the image, it's just a test
+          push: false
+          tags: cat-shop:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
