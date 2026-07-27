@@ -1,0 +1,236 @@
+.detailContainer {
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.notFoundContainer {
+  padding: 5rem 1.25rem;
+  text-align: center;
+}
+
+.notFoundContainer h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.notFoundContainer p {
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+}
+
+.breadcrumb {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+}
+
+.breadcrumb a {
+  color: var(--color-primary);
+}
+
+.categoryName {
+  text-transform: capitalize;
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  margin-bottom: 4rem;
+}
+
+@media (min-width: 768px) {
+  .productGrid {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.imageContainer {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+}
+
+.mainImage {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background-color: rgba(255, 251, 247, 0.92);
+  color: var(--color-text-main);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(4px);
+}
+
+.infoContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--color-text-main);
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.price {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.stockBadge {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+}
+
+.inStock {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.outOfStock {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.description {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.purchaseControls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 480px) {
+  .purchaseControls {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.quantitySelector {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.quantityLabel {
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.quantityStepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-surface);
+}
+
+.stepBtn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  background-color: transparent;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--color-text-main);
+  transition: background-color var(--transition-fast);
+}
+
+.stepBtn:hover {
+  background-color: var(--color-surface-subtle);
+}
+
+.quantityInput {
+  width: 46px;
+  height: 38px;
+  border: none;
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+  text-align: center;
+  font-weight: 700;
+  font-size: 1rem;
+  -moz-appearance: textfield;
+}
+
+.quantityInput::-webkit-outer-spin-button,
+.quantityInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.successMessage {
+  margin-top: 1.5rem;
+  padding: 0.875rem 1.25rem;
+  background-color: #d1e7dd;
+  color: #0f5132;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cartLink {
+  text-decoration: underline;
+  color: #0f5132;
+}
+
+.relatedSection {
+  margin-top: 3rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.relatedTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+}
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 550px) {
+  .relatedGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

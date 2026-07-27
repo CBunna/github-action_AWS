@@ -1,0 +1,110 @@
+[
+  {
+    "id": "prod-1",
+    "name": "Feather Wand Teaser Toy",
+    "category": "toys",
+    "price": 12.99,
+    "description": "Interactive cat wand with natural feathers and flexible rod to keep your feline active and engaged for hours.",
+    "imageUrl": "https://placehold.co/400x400/f4a261/ffffff?text=Feather+Wand",
+    "inStock": true
+  },
+  {
+    "id": "prod-2",
+    "name": "Catnip Mice Trio",
+    "category": "toys",
+    "price": 8.49,
+    "description": "Pack of 3 plush toy mice stuffed with 100% organic North American catnip.",
+    "imageUrl": "https://placehold.co/400x400/d96b43/ffffff?text=Catnip+Mice",
+    "inStock": true
+  },
+  {
+    "id": "prod-3",
+    "name": "Automatic Laser Spinner",
+    "category": "toys",
+    "price": 24.99,
+    "description": "360-degree rotating automated laser toy with multiple speed settings for endless fun.",
+    "imageUrl": "https://placehold.co/400x400/e76f51/ffffff?text=Laser+Spinner",
+    "inStock": true
+  },
+  {
+    "id": "prod-4",
+    "name": "Salmon & Sweet Potato Crunchies",
+    "category": "food",
+    "price": 18.99,
+    "description": "Grain-free kibble prepared with real wild salmon, rich in omega-3 fatty acids for healthy skin & shiny coat.",
+    "imageUrl": "https://placehold.co/400x400/2a9d8f/ffffff?text=Salmon+Kibble",
+    "inStock": true
+  },
+  {
+    "id": "prod-5",
+    "name": "Gourmet Chicken Pate Cans (Pack of 12)",
+    "category": "food",
+    "price": 22.5,
+    "description": "Slow-cooked chicken recipe pate in savory gravy, enriched with essential vitamins and taurine.",
+    "imageUrl": "https://placehold.co/400x400/e7914f/ffffff?text=Chicken+Pate",
+    "inStock": true
+  },
+  {
+    "id": "prod-6",
+    "name": "Freeze-Dried Chicken Breast Bites",
+    "category": "food",
+    "price": 11.25,
+    "description": "Single-ingredient high-protein treats made from 100% pure freeze-dried chicken breast.",
+    "imageUrl": "https://placehold.co/400x400/c45730/ffffff?text=Chicken+Treats",
+    "inStock": false
+  },
+  {
+    "id": "prod-7",
+    "name": "Orthopedic Memory Foam Donut Bed",
+    "category": "beds",
+    "price": 39.99,
+    "description": "Ultra-soft plush cave donut bed designed to relieve joint pain and reduce anxiety in indoor cats.",
+    "imageUrl": "https://placehold.co/400x400/f4a261/ffffff?text=Donut+Bed",
+    "inStock": true
+  },
+  {
+    "id": "prod-8",
+    "name": "Window Hammock Perch",
+    "category": "beds",
+    "price": 29.95,
+    "description": "Heavy-duty window seat perch holding up to 40 lbs, perfect for sunbathing and bird watching.",
+    "imageUrl": "https://placehold.co/400x400/d96b43/ffffff?text=Window+Perch",
+    "inStock": true
+  },
+  {
+    "id": "prod-9",
+    "name": "Multi-Level Sisal Scratching Tree",
+    "category": "beds",
+    "price": 64.99,
+    "description": "45-inch cat tree featuring natural sisal scratching posts, cozy hammock, and top lounging platform.",
+    "imageUrl": "https://placehold.co/400x400/2a9d8f/ffffff?text=Scratching+Tree",
+    "inStock": true
+  },
+  {
+    "id": "prod-10",
+    "name": "Breakaway Velvet Collar with Bell",
+    "category": "accessories",
+    "price": 9.99,
+    "description": "Adjustable quick-release safety collar with soft velvet lining and removable golden bell.",
+    "imageUrl": "https://placehold.co/400x400/e76f51/ffffff?text=Velvet+Collar",
+    "inStock": true
+  },
+  {
+    "id": "prod-11",
+    "name": "Ergonomic Stainless Steel Bowl",
+    "category": "accessories",
+    "price": 15.49,
+    "description": "Whisker-friendly shallow food bowl with non-slip silicone base and tilted angle.",
+    "imageUrl": "https://placehold.co/400x400/f4a261/ffffff?text=Cat+Bowl",
+    "inStock": true
+  },
+  {
+    "id": "prod-12",
+    "name": "Self-Cleaning Grooming Slicker Brush",
+    "category": "accessories",
+    "price": 14.99,
+    "description": "Gently removes loose hair and tangles with push-button easy cleaning action.",
+    "imageUrl": "https://placehold.co/400x400/d96b43/ffffff?text=Grooming+Brush",
+    "inStock": true
+  }
+]
