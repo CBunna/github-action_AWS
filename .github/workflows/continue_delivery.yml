@@ -1,0 +1,93 @@
+name: Continuous Delivery (CD) & Container Release
+on:
+    push:
+        tags:
+            - "v*.*.*"
+    workflow_run:
+        workflows: ["Continuous Integration (CI)"]
+        types:
+            - completed
+        branches:
+            - main
+permissions:
+    contents: read
+    packages: write
+    security-events: write
+
+jobs:
+    # Job 1: Build & Push Docker Image to GHCR
+    build-and-push-ghcr:
+        name: Build & Push Container Image to GHCR
+        #Trigger when pushing a tag version or when the CI workflow completes successfully
+        if: github.event.name == 'push' || github.event.workflow_run.conclusion == 'success'
+        runs-on: ubuntu-latest
+
+        #Declare output to share the image tag with other jobs
+        outputs:
+            image_tag: ${{steps.set-tag.outputs.image_tag}}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            # GitHub’s runners use x86 (amd64) CPUs. QEMU allows the runner to simulate other CPU architectures like ARM64 (linux/arm64). This enables you to build container images that run natively on Apple Silicon MacBooks (M1/M2/M3) or ARM cloud servers (like AWS Graviton) without hardware errors.
+            - name: Set up QEMU for multi-platform builds
+              uses: docker/setup-qemu-action@v4
+
+            # tandard docker build lacks support for multi-platform outputs, advanced layer caching, and automatic metadata labeling. Buildx unlocks these features (including the cache-from/cache-to options used in step 6).
+            - name: set up Docker buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+            - name: Extract Docker metadata
+              id: meta
+              uses: docker/metadata-action@v5
+              with:
+                  images: ghcr.io/${{ github.repository }}
+                  tags: |
+                      type=semver,pattern={{version}}
+                      type=semver,pattern={{major}}.{{minor}}
+                      type=ref,event=branch
+                      type=sha,prefix=sha-
+                      type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+            - name: Build and push Docker image
+              uses: docker/build-push-action@v5
+              with:
+                  context: .
+                  push: true
+                  tags: ${{ steps.meta.outputs.tags }}
+                  labels: ${{ steps.meta.outputs.labels }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+    # Job 2: Trivy Container Vulnerability Scan
+    trivy-security-scan:
+        name: Container Vulnerability Security Scan
+        runs-on: ubuntu-latest
+        needs: build-and-push-ghcr
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            # Scan using the exact SHA tag pushed in Job 1
+            - name: Run Trivy vulnerability scanner
+              uses: aquasecurity/trivy-action@master
+              with:
+                  image-ref: "ghcr.io/${{ github.repository }}:sha-${{ github.sha }}"
+                  format: "sarif"
+                  output: "trivy-results.sarif"
+                  exit-code: "0"
+                  ignore-unfixed: true
+                  vuln-type: "os,library"
+                  severity: "CRITICAL,HIGH"
+
+            - name: Upload Trivy scan results to GitHub Security
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                  sarif_file: "trivy-results.sarif"
+# Job 3: Deployment to AWS Elastic Beanstalk
