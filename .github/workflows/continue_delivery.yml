@@ -4,7 +4,7 @@ on:
     tags:
       - 'v*.*.*'
   workflow_run:
-    workflows: ['Continuous Integration (CI)']
+    workflows: ['Continue Integration (CI)']
     types:
       - completed
     branches:
@@ -19,7 +19,7 @@ jobs:
   build-and-push-ghcr:
     name: Build & Push Container Image to GHCR
     #Trigger when pushing a tag version or when the CI workflow completes successfully
-    if: github.event.name == 'push' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
 
     #Declare output to share the image tag with other jobs
