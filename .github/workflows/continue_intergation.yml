@@ -2,10 +2,18 @@ name: Continue Integration (CI)
 on:
   # trigger for push event to main, master, and feature branches
   push:
-    branches: [main, master, 'feature/**']
+    branches: [main, master, "feature/**"]
   # trigger for pull request event to main and master branches
   pull_request:
     branches: [main, master]
+
+# Concurrency: Ensure only one run of this workflow exists per branch.
+# This prevents multiple concurrent runs on the same branch from overwhelming the CI runner.
+# The group is the same as the workflow name and the branch name, which ensures that only one run of this workflow exists per branch.
+# The cancel-in-progress: true option ensures that if a new run is started on the same branch, the previous run will be cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 # permission to access the repository contents and packages
 permissions:
@@ -16,7 +24,9 @@ jobs:
   # Job 1: Code Quality & Security Audit
   code-quality:
     name: Code Quality & Security Audit
+    needs: []
     runs-on: ubuntu-latest
+    timeout-minutes: 10 # Because without it, a stuck job runs until the default cap — 6 hours — before GitHub kills it.
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,7 +35,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
+          cache: "npm"
       - name: Install Dependencies
         run: npm ci
 
@@ -37,16 +47,22 @@ jobs:
       - name: Run Prettier formatting check
         run: npm run format:check
 
-      # npm audit --audit-level=high will check for security vulnerabilities in the dependencies
-      - name: Run security audit for dependencies
+      # CRITICAL findings fail the build — rare enough that this is real signal, not noise.
+      - name: Run security audit (critical - blocks the build)
+        run: npm audit --audit-level=critical
+
+      # HIGH findings are reported but don't fail the build — common enough (including in
+      # dev-only transitive deps) that hard-blocking on every one causes alert fatigue.
+      - name: Run security audit (high - informational only)
         run: npm audit --audit-level=high
         continue-on-error: true
 
   # Job 2: Automated Unit & Component Tests
   unit-and-component-tests:
     name: Unit & Component Tests
+    needs: []
     runs-on: ubuntu-latest
-    needs: code-quality
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -55,7 +71,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
+          cache: "npm"
       - name: Install Dependencies
         run: npm ci
 
@@ -67,12 +83,16 @@ jobs:
   build-application:
     name: Build Production Assets
     runs-on: ubuntu-latest
-    needs: unit-and-component-tests
+    timeout-minutes: 10
+    needs: [code-quality, unit-and-component-tests]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
       - name: Set up Node.js 18
         uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
       - name: Install Dependencies
         run: npm ci
       - name: Build static Production bundle
@@ -90,6 +110,7 @@ jobs:
   docker-build-test:
     name: Verify Docker Container Build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: build-application
     steps:
       - name: Checkout code
