@@ -2,9 +2,9 @@ name: Continuous Delivery (CD) & Container Release
 on:
   push:
     tags:
-      - "v*.*.*"
+      - 'v*.*.*'
   workflow_run:
-    workflows: ["Continue Integration (CI)"]
+    workflows: ['Continue Integration (CI)']
     types:
       - completed
     branches:
@@ -84,18 +84,18 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: "${{ needs.build-and-push-ghcr.outputs.image_tag }}"
-          format: "sarif"
-          output: "trivy-results.sarif"
-          exit-code: "0"
+          image-ref: '${{ needs.build-and-push-ghcr.outputs.image_tag }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: '0'
           ignore-unfixed: true
-          vuln-type: "os,library"
-          severity: "CRITICAL,HIGH"
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
 
       - name: Upload Trivy scan results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: "trivy-results.sarif"
+          sarif_file: 'trivy-results.sarif'
 
       # Gate: fail this job on CRITICAL vulnerabilities that have a known fix available.
       # Runs after the report above so the Security tab always gets the full picture,
@@ -103,11 +103,11 @@ jobs:
       - name: Fail on fixable CRITICAL vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: "${{ needs.build-and-push-ghcr.outputs.image_tag }}"
-          exit-code: "1"
+          image-ref: '${{ needs.build-and-push-ghcr.outputs.image_tag }}'
+          exit-code: '1'
           ignore-unfixed: true
-          vuln-type: "os,library"
-          severity: "CRITICAL"
+          vuln-type: 'os,library'
+          severity: 'CRITICAL'
 
   # Job 3: Deploy (placeholder — swap in real deploy commands once a host is chosen)
   deploy:
