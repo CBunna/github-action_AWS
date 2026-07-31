@@ -126,21 +126,20 @@ jobs:
           script: |
             # 1. Authenticate with GitHub Container Registry on EC2
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
+
             # 2. Pull the exact container image tag produced by build-and-push-ghcr
             docker pull ${{ needs.build-and-push-ghcr.outputs.image_tag }}
-            
+
             # 3. Gracefully stop and remove the old running container (if present)
             docker stop cat-app || true
             docker rm cat-app || true
-            
+
             # 4. Start the new container on port 80 with auto-restart on system reboot
             docker run -d \
               --name cat-app \
               --restart always \
               -p 80:80 \
               ${{ needs.build-and-push-ghcr.outputs.image_tag }}
-            
+
             # 5. Clean up old/unused images to keep EC2 storage low
             docker image prune -f
-
