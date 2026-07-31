@@ -9,6 +9,7 @@ docs
 .env
 .env.local
 .env.*.local
+cat-app.pem
 
 # logs
 *.log

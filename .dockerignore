@@ -9,3 +9,4 @@ dist
 README.md
 Dockerfile
 .dockerignore
+cat-app.pem
